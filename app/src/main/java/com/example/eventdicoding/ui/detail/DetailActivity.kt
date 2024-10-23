@@ -17,32 +17,39 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
 
+    companion object {
+        const val EVENT_KEY = "event"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val event = if (Build.VERSION.SDK_INT >= 35) {
-            intent.getParcelableExtra("event", ListEventsItem::class.java)
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(EVENT_KEY, ListEventsItem::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra("event")
+            intent.getParcelableExtra(EVENT_KEY)
         }
 
         event?.let {
-            // Menampilkan data event ke view
+            // Displaying event details
             with(binding) {
                 tvDetailName.text = event.name
                 tvDetailOwnername.text = event.ownerName
                 tvDetailBegintime.text = event.beginTime
-                tvDetailQuota.text = getString(R.string.quota_left, event.quota?.minus(event.registrants ?: 0))
+                tvDetailQuota.text = getString(
+                    R.string.quota_left,
+                    event.quota?.minus(event.registrants ?: 0)
+                )
                 tvDetailDescription.text = event.description?.let {
                     HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY)
                 } ?: ""
-            }
 
-            val imageView: ImageView = binding.ivImageUpcoming
-            Glide.with(this).load(event.imageLogo ?: event.mediaCover).into(imageView)
+                // Using the extension function for image loading
+                ivImageUpcoming.loadImage(event.imageLogo ?: event.mediaCover)
+            }
 
             binding.btnDetailSign.setOnClickListener {
                 val intent = Intent(Intent.ACTION_VIEW)
@@ -50,9 +57,17 @@ class DetailActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         } ?: run {
-            // Handle jika event null
+            // Handle null event
             Snackbar.make(binding.root, "Event tidak ditemukan", Snackbar.LENGTH_SHORT).show()
             finish()
         }
     }
+}
+
+// Extension function for ImageView to load image with Glide
+fun ImageView.loadImage(url: String?) {
+    Glide.with(this.context)
+        .load(url)
+        .centerCrop()
+        .into(this)
 }

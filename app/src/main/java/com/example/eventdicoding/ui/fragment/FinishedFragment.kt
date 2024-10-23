@@ -17,7 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 class FinishedFragment : Fragment() {
 
     private var _binding: FragmentFinishedBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = _binding ?: throw IllegalStateException("Binding should not be accessed when it is null")
 
     private lateinit var mainViewModel: MainViewModel
     private lateinit var eventAdapter: EventAdapter
@@ -49,25 +49,24 @@ class FinishedFragment : Fragment() {
             showLoading(isLoading)
         }
 
-        // Observasi pesan error
+        // Observe error messages
         mainViewModel.errorMessage.observe(viewLifecycleOwner) { errorMsg ->
             errorMsg?.let {
-                // Menggunakan Snackbar untuk menampilkan pesan error
+                // Use Snackbar to display error message
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
             }
         }
-
     }
 
     private fun setupRecyclerView() {
         eventAdapter = EventAdapter(requireContext()) { event ->
             // Handle event click, navigate to DetailActivity
             val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                putExtra("event", event) // Pastikan 'event' sesuai dengan model data yang dikirim
+                putExtra("event", event) // Ensure 'event' matches the model data being sent
             }
             startActivity(intent)
         }
-        binding.recycleApiFinish.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.recycleApiFinish.layoutManager = LinearLayoutManager(context)
         binding.recycleApiFinish.adapter = eventAdapter
     }
 

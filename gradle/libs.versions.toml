@@ -1,8 +1,8 @@
-[versions]
+    [versions]
 agp = "8.6.1"
 cardviewVersion = "1.0.0"
 glide = "4.16.0"
-kotlin = "1.9.0"
+kotlin = "1.9.24"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -13,10 +13,10 @@ material = "1.12.0"
 constraintlayout = "2.1.4"
 lifecycleLivedataKtx = "2.8.6"
 lifecycleViewmodelKtx = "2.8.6"
-navigationFragmentKtx = "2.8.2"
-navigationUiKtx = "2.8.2"
+navigationFragmentKtx = "2.8.3"
+navigationUiKtx = "2.8.3"
 retrofit = "2.9.0"
-activity = "1.9.2"
+activity = "1.9.3"
 cronetEmbedded = "119.6045.31"
 
 [libraries]
