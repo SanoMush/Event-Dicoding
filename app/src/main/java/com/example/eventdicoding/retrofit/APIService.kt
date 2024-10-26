@@ -1,7 +1,7 @@
 package com.example.eventdicoding.retrofit
 
 import retrofit2.Call
-import com.example.eventdicoding.data.EventResponse
+import com.example.eventdicoding.data.response.EventResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

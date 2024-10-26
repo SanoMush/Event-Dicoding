@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.eventdicoding.R
-import com.example.eventdicoding.data.ListEventsItem
+import com.example.eventdicoding.data.response.ListEventsItem
 
 class EventAdapter(
     private val context: Context,

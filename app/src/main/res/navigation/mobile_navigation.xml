@@ -35,6 +35,8 @@
         android:label="Setting"
         tools:layout="@layout/fragment_setting"/>
 
-
+    <action
+        android:id="@+id/action_detail_to_favorite"
+        app:destination="@id/navigation_favorite" />
 
 </navigation>
