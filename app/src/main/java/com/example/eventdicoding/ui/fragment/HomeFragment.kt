@@ -1,11 +1,14 @@
 package com.example.eventdicoding.ui.fragment
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,12 +26,26 @@ class HomeFragment : Fragment() {
     private lateinit var mainViewModel: MainViewModel
     private lateinit var activeEventAdapter: EventAdapter
     private lateinit var finishedEventAdapter: EventAdapter
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var themeListener: SharedPreferences.OnSharedPreferenceChangeListener
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        sharedPreferences = requireActivity().getSharedPreferences("ThemePref", Context.MODE_PRIVATE)
+
+        // Listener untuk memantau perubahan pada tema
+        themeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == "isDarkMode") {
+                applyTheme()
+            }
+        }
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(themeListener)
+
         return binding.root
     }
 
@@ -53,7 +70,6 @@ class HomeFragment : Fragment() {
         }
 
         mainViewModel.searchResults.observe(viewLifecycleOwner) { searchResults ->
-            // Tampilkan hasil pencarian
             activeEventAdapter.submitList(searchResults)
         }
 
@@ -70,6 +86,18 @@ class HomeFragment : Fragment() {
         // Fetch initial data
         mainViewModel.fetchEvents(1)
         mainViewModel.fetchEvents(0)
+
+        // Apply the current theme based on saved preference
+        applyTheme()
+    }
+
+    private fun applyTheme() {
+        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -116,6 +144,7 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(themeListener)
         _binding = null
     }
 }

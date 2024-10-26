@@ -1,5 +1,6 @@
 package com.example.eventdicoding
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -9,6 +10,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.eventdicoding.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.appcompat.app.AppCompatDelegate
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,9 +20,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Load theme preference before setting the content view
+        val sharedPreferences = getSharedPreferences("ThemePref", Context.MODE_PRIVATE)
+        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         val navView: BottomNavigationView = binding.navView
 

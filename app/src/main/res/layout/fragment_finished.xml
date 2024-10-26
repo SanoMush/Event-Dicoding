@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.fragment.FinishedFragment"
     android:padding="8dp"
-    android:background="@color/background_color">
+    android:background="?attr/colorBackground">
 
     <ProgressBar
         android:id="@+id/progressBar"

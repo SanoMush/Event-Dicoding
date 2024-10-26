@@ -4,6 +4,8 @@
     <color name="purple_700">#E91E63</color>
     <color name="teal_200">#137572</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FFFFFF</color>
-    <color name="background_color">#F6FFFFFF</color>
+    <color name="background_color">#FFFFFF</color> <!-- Light Mode -->
+    <color name="background_color_night">#121212</color> <!-- Dark Mode -->
+    <color name="textColor">#000000</color> <!-- Warna teks di light mode -->
+    <color name="textColorNight">#FFFFFF</color> <!-- Warna teks di dark mode -->
 </resources>
