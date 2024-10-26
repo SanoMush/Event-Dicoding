@@ -18,8 +18,10 @@ navigationUiKtx = "2.8.3"
 retrofit = "2.9.0"
 activity = "1.9.3"
 cronetEmbedded = "119.6045.31"
+    preference = "1.2.1"
+    preferenceKtx = "1.2.1"
 
-[libraries]
+    [libraries]
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardviewVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
@@ -38,8 +40,10 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 cronet-embedded = { group = "org.chromium.net", name = "cronet-embedded", version.ref = "cronetEmbedded" }
+    androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+    androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
 
-[plugins]
+    [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
