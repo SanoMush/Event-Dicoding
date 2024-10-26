@@ -42,11 +42,28 @@ class MainActivity : AppCompatActivity() {
         // Setup AppBarConfiguration and ActionBar
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_upcoming, R.id.navigation_finished
+                R.id.navigation_home,
+                R.id.navigation_upcoming,
+                R.id.navigation_finished,
+                R.id.navigation_favorite,
+                R.id.navigation_setting
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        // Menambahkan listener untuk menampilkan tombol back
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            val isBackButtonVisible = when (destination.id) {
+                R.id.navigation_upcoming,
+                R.id.navigation_finished,
+                R.id.navigation_favorite,
+                R.id.navigation_setting -> true
+                else -> false
+            }
+
+            supportActionBar?.setDisplayHomeAsUpEnabled(isBackButtonVisible)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
