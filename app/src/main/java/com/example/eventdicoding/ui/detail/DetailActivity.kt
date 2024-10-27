@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.bumptech.glide.Glide
 import com.example.eventdicoding.R
+import com.example.eventdicoding.data.local.FavoriteEventEntity
+import com.example.eventdicoding.data.local.FavoriteEventRepository
 import com.example.eventdicoding.data.response.ListEventsItem
 import com.example.eventdicoding.databinding.ActivityDetailBinding
 import com.google.android.material.snackbar.Snackbar
@@ -19,6 +21,7 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
     private lateinit var fabFavorite: FloatingActionButton
     private var isFavorite = false
+    private lateinit var favoriteEventRepository: FavoriteEventRepository
 
     companion object {
         const val EVENT_KEY = "event"
@@ -29,7 +32,9 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Menginisialisasi FloatingActionButton
+        // Initialize FavoriteEventRepository
+        favoriteEventRepository = FavoriteEventRepository.getInstance(this)
+
         fabFavorite = binding.fabFav
 
         val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -40,7 +45,6 @@ class DetailActivity : AppCompatActivity() {
         }
 
         event?.let {
-            // Displaying event details
             with(binding) {
                 tvDetailName.text = event.name
                 tvDetailOwnername.text = event.ownerName
@@ -64,17 +68,15 @@ class DetailActivity : AppCompatActivity() {
             }
 
             // Cek status awal favorite
-            isFavorite = getFavoriteStatus()
-            updateFavoriteIcon()
+            checkFavoriteStatus(event.id.toString()) // Konversi ID ke String
 
             // Handle klik pada FloatingActionButton
             fabFavorite.setOnClickListener {
                 isFavorite = !isFavorite // Toggle status favorite
-                saveFavoriteStatus(isFavorite) // Simpan status terbaru
+                saveFavoriteStatus(event) // Simpan status terbaru ke database
                 updateFavoriteIcon() // Update icon
             }
         } ?: run {
-            // Handle null event
             Snackbar.make(binding.root, "Event tidak ditemukan", Snackbar.LENGTH_SHORT).show()
             finish()
         }
@@ -84,20 +86,32 @@ class DetailActivity : AppCompatActivity() {
         if (isFavorite) {
             fabFavorite.setImageResource(R.drawable.ic_favorite_black_24dp) // Icon favorite
         } else {
-            fabFavorite.setImageResource(R.drawable.ic_unfavorite_black_24dp) // Icon belum favorite
+            fabFavorite.setImageResource(R.drawable.ic_unfavorite_black_24dp) // Icon unfavorite
         }
     }
 
-    private fun getFavoriteStatus(): Boolean {
-        // Implementasi menggunakan SharedPreferences
-        val sharedPreferences = getSharedPreferences("favorite_prefs", MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isFavorite", false)
+    private fun checkFavoriteStatus(eventId: String) {
+        favoriteEventRepository.getFavoriteEventById(eventId).observe(this) { favoriteEvent ->
+            isFavorite = favoriteEvent != null // Jika ada, berarti itu adalah favorit
+            updateFavoriteIcon() // Update ikon berdasarkan status favorit
+        }
     }
 
-    private fun saveFavoriteStatus(isFavorite: Boolean) {
-        // Simpan status ke SharedPreferences
-        val sharedPreferences = getSharedPreferences("favorite_prefs", MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean("isFavorite", isFavorite).apply()
+    private fun saveFavoriteStatus(event: ListEventsItem) {
+        if (isFavorite) {
+            val favoriteEventEntity = FavoriteEventEntity(
+                id = event.id.toString(), // Pastikan ID dikonversi ke String
+                name = event.name,
+                imageLogo = event.imageLogo
+            )
+            favoriteEventRepository.insertEvent(favoriteEventEntity) // Simpan sebagai favorit
+        } else {
+            favoriteEventRepository.getFavoriteEventById(event.id.toString()).observe(this) { favoriteEvent -> // Konversi ID ke String
+                favoriteEvent?.let {
+                    favoriteEventRepository.delete(it) // Hapus dari database jika sebelumnya ada
+                }
+            }
+        }
     }
 }
 

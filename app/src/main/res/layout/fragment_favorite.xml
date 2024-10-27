@@ -27,7 +27,7 @@
         android:id="@+id/rv_favorite"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="16dp"  />
+        android:layout_margin="8dp"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

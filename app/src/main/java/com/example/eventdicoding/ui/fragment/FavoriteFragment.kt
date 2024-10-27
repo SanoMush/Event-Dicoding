@@ -1,56 +1,68 @@
 package com.example.eventdicoding.ui.fragment
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.eventdicoding.R
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import com.example.eventdicoding.data.local.FavoriteEventRepository
+import com.example.eventdicoding.ui.detail.DetailActivity
+import com.example.eventdicoding.vmodel.FavoriteEventAdapter
 
-/**
- * A simple [Fragment] subclass.
- * Use the [FavoriteFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FavoriteFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var favoriteEventAdapter: FavoriteEventAdapter
+    private lateinit var messageTextView: TextView
+    private lateinit var favoriteEventRepository: FavoriteEventRepository
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_favorite, container, false)
+
+        // Initialize views
+        recyclerView = view.findViewById(R.id.rv_favorite)
+        messageTextView = view.findViewById(R.id.message)
+
+        // Set up RecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        favoriteEventAdapter = FavoriteEventAdapter(requireContext()) { favoriteEvent ->
+            // Handle item click and navigate to DetailActivity
+            val intent = Intent(requireContext(), DetailActivity::class.java).apply {
+                putExtra(DetailActivity.EVENT_KEY, favoriteEvent)
+            }
+            startActivity(intent)
         }
+
+        recyclerView.adapter = favoriteEventAdapter
+
+        // Initialize repository
+        favoriteEventRepository = FavoriteEventRepository(requireContext())
+
+        // Load favorite events from Room Database
+        loadFavoriteEvents()
+
+        return view
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favorite, container, false)
-    }
+    private fun loadFavoriteEvents() {
+        favoriteEventRepository.getAllFavoriteEvent().observe(viewLifecycleOwner, Observer { events ->
+            favoriteEventAdapter.submitList(events)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FavoriteFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic fun newInstance(param1: String, param2: String) =
-                FavoriteFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_PARAM1, param1)
-                        putString(ARG_PARAM2, param2)
-                    }
-                }
+            // Show message if there are no favorite events
+            if (events.isEmpty()) {
+                messageTextView.visibility = View.VISIBLE
+            } else {
+                messageTextView.visibility = View.GONE
+            }
+        })
     }
 }
