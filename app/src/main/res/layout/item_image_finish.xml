@@ -35,7 +35,6 @@ android:layout_height="wrap_content">
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/event_subtitle"
-            android:textColor="@android:color/darker_gray"
             android:textSize="14sp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/judul_event"
-            android:textColor="@android:color/black"
+            android:textColor="@color/card_text_color"
             android:textSize="16sp"
             android:textStyle="bold" />
 

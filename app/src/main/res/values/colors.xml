@@ -8,4 +8,9 @@
     <color name="background_color_night">#121212</color> <!-- Dark Mode -->
     <color name="textColor">#000000</color> <!-- Warna teks di light mode -->
     <color name="textColorNight">#FFFFFF</color> <!-- Warna teks di dark mode -->
+
+
+        <color name="card_text_color">#000000</color> <!-- Hitam untuk mode terang -->
+
+
 </resources>
