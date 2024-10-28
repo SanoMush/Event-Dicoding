@@ -2,6 +2,7 @@ package com.example.eventdicoding.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,12 +36,13 @@ class FavoriteFragment : Fragment() {
         // Set up RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(context)
         favoriteEventAdapter = FavoriteEventAdapter(requireContext()) { favoriteEvent ->
-            // Handle item click and navigate to DetailActivity
+            Log.d("FavoriteFragment", "Navigating to DetailActivity with: $favoriteEvent")
             val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                putExtra(DetailActivity.EVENT_KEY, favoriteEvent)
+                putExtra("event", favoriteEvent)
             }
             startActivity(intent)
         }
+
 
         recyclerView.adapter = favoriteEventAdapter
 

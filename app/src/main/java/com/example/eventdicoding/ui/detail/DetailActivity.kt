@@ -34,47 +34,49 @@ class DetailActivity : AppCompatActivity() {
 
         // Initialize FavoriteEventRepository
         favoriteEventRepository = FavoriteEventRepository.getInstance(this)
-
         fabFavorite = binding.fabFav
 
+        // Get the event object and determine its type
         val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(EVENT_KEY, ListEventsItem::class.java)
+                ?: intent.getParcelableExtra(EVENT_KEY, FavoriteEventEntity::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra(EVENT_KEY)
+            intent.getParcelableExtra(EVENT_KEY) as? ListEventsItem
+                ?: intent.getParcelableExtra(EVENT_KEY) as? FavoriteEventEntity
         }
 
         event?.let {
-            with(binding) {
-                tvDetailName.text = event.name
-                tvDetailOwnername.text = event.ownerName
-                tvDetailBegintime.text = event.beginTime
-                tvDetailQuota.text = getString(
-                    R.string.quota_left,
-                    event.quota?.minus(event.registrants ?: 0)
-                )
-                tvDetailDescription.text = event.description?.let {
-                    HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY)
-                } ?: ""
-
-                // Using the extension function for image loading
-                ivImageUpcoming.loadImage(event.imageLogo ?: event.mediaCover)
+            when (it) {
+                is ListEventsItem -> setupUIWithListEventsItem(it)
+                is FavoriteEventEntity -> setupUIWithFavoriteEventEntity(it)
             }
 
             binding.btnDetailSign.setOnClickListener {
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse(event.link)
+                intent.data = Uri.parse((event as? ListEventsItem)?.link)
                 startActivity(intent)
             }
 
-            // Cek status awal favorite
-            checkFavoriteStatus(event.id.toString()) // Konversi ID ke String
+            // Check initial favorite status
+            val eventId = when (event) {
+                is ListEventsItem -> event.id.toString()
+                is FavoriteEventEntity -> event.id
+                else -> null
+            }
 
-            // Handle klik pada FloatingActionButton
+            eventId?.let { checkFavoriteStatus(it) }
+
+
+            // Handle click on FloatingActionButton
             fabFavorite.setOnClickListener {
-                isFavorite = !isFavorite // Toggle status favorite
-                saveFavoriteStatus(event) // Simpan status terbaru ke database
-                updateFavoriteIcon() // Update icon
+                isFavorite = !isFavorite
+                if (event is ListEventsItem) {
+                    saveFavoriteStatus(event)
+                } else if (event is FavoriteEventEntity) {
+                    saveFavoriteStatusFromEntity(event)
+                }
+                updateFavoriteIcon()
             }
         } ?: run {
             Snackbar.make(binding.root, "Event tidak ditemukan", Snackbar.LENGTH_SHORT).show()
@@ -82,33 +84,72 @@ class DetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupUIWithListEventsItem(event: ListEventsItem) {
+        with(binding) {
+            tvDetailName.text = event.name
+            tvDetailOwnername.text = event.ownerName
+            tvDetailBegintime.text = event.beginTime
+            tvDetailQuota.text = getString(
+                R.string.quota_left,
+                event.quota?.minus(event.registrants ?: 0)
+            )
+            tvDetailDescription.text = event.description?.let {
+                HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY)
+            } ?: ""
+            ivImageUpcoming.loadImage(event.imageLogo ?: event.mediaCover)
+        }
+    }
+
+    private fun setupUIWithFavoriteEventEntity(event: FavoriteEventEntity) {
+        with(binding) {
+            tvDetailName.text = event.name
+            tvDetailOwnername.text = "" // Adjust for missing data in FavoriteEventEntity
+            tvDetailBegintime.text = ""
+            tvDetailQuota.text = ""
+            tvDetailDescription.text = ""
+            ivImageUpcoming.loadImage(event.imageLogo)
+        }
+    }
+
     private fun updateFavoriteIcon() {
         if (isFavorite) {
-            fabFavorite.setImageResource(R.drawable.ic_favorite_black_24dp) // Icon favorite
+            fabFavorite.setImageResource(R.drawable.ic_favorite_black_24dp)
         } else {
-            fabFavorite.setImageResource(R.drawable.ic_unfavorite_black_24dp) // Icon unfavorite
+            fabFavorite.setImageResource(R.drawable.ic_unfavorite_black_24dp)
         }
     }
 
     private fun checkFavoriteStatus(eventId: String) {
         favoriteEventRepository.getFavoriteEventById(eventId).observe(this) { favoriteEvent ->
-            isFavorite = favoriteEvent != null // Jika ada, berarti itu adalah favorit
-            updateFavoriteIcon() // Update ikon berdasarkan status favorit
+            isFavorite = favoriteEvent != null
+            updateFavoriteIcon()
         }
     }
 
     private fun saveFavoriteStatus(event: ListEventsItem) {
         if (isFavorite) {
             val favoriteEventEntity = FavoriteEventEntity(
-                id = event.id.toString(), // Pastikan ID dikonversi ke String
+                id = event.id.toString(),
                 name = event.name,
                 imageLogo = event.imageLogo
             )
-            favoriteEventRepository.insertEvent(favoriteEventEntity) // Simpan sebagai favorit
+            favoriteEventRepository.insertEvent(favoriteEventEntity)
         } else {
-            favoriteEventRepository.getFavoriteEventById(event.id.toString()).observe(this) { favoriteEvent -> // Konversi ID ke String
+            favoriteEventRepository.getFavoriteEventById(event.id.toString()).observe(this) { favoriteEvent ->
                 favoriteEvent?.let {
-                    favoriteEventRepository.delete(it) // Hapus dari database jika sebelumnya ada
+                    favoriteEventRepository.delete(it)
+                }
+            }
+        }
+    }
+
+    private fun saveFavoriteStatusFromEntity(event: FavoriteEventEntity) {
+        if (isFavorite) {
+            favoriteEventRepository.insertEvent(event)
+        } else {
+            favoriteEventRepository.getFavoriteEventById(event.id).observe(this) { favoriteEvent ->
+                favoriteEvent?.let {
+                    favoriteEventRepository.delete(it)
                 }
             }
         }
